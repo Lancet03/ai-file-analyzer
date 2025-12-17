@@ -11,6 +11,9 @@ import { RequestStatusBadge } from "@/components/request-status-badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
+import { getFileUrl } from "@/lib/api/requests";
+import type { RequestStatus } from "@/lib/types";
+
 import {
   Table,
   TableBody,
@@ -19,6 +22,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
+function statusProgress(s: RequestStatus): number {
+  // бэк не даёт % анализа — показываем условно по статусу
+  if (s === "PENDING") return 10;
+  if (s === "SCHEDULED") return 35;
+  if (s === "COMPLETED") return 100;
+  if (s === "FAILED") return 100;
+  return 0;
+}
 
 export default function StatusesPage() {
   useRequestsPolling(3000);
@@ -47,10 +59,10 @@ export default function StatusesPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
               <TableHead>Файл</TableHead>
-              <TableHead>Описание</TableHead>
+
               <TableHead>Создан</TableHead>
+              <TableHead>Обновлён</TableHead>
               <TableHead>Статус</TableHead>
               <TableHead>Прогресс</TableHead>
               <TableHead className="text-right">Действия</TableHead>
@@ -60,25 +72,19 @@ export default function StatusesPage() {
           <TableBody>
             {requests.map((r) => (
               <TableRow key={r.id}>
-                <TableCell className="font-mono text-xs">{r.id}</TableCell>
-                <TableCell className="font-medium">
-                  {r.filename ?? "-"}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {(r.description ?? "").toString() || "-"}
+                <TableCell className="font-medium">{r.filename}</TableCell>
+
+                <TableCell>
+                  {dayjs(r.createdAt).format("YYYY-MM-DD HH:mm:ss")}
                 </TableCell>
                 <TableCell>
-                  {r.createdAtISO
-                    ? dayjs(r.createdAtISO).format("YYYY-MM-DD HH:mm:ss")
-                    : "-"}
+                  {dayjs(r.updatedAt).format("YYYY-MM-DD HH:mm:ss")}
                 </TableCell>
                 <TableCell>
                   <RequestStatusBadge status={r.status} />
                 </TableCell>
                 <TableCell className="w-[180px]">
-                  <Progress
-                    value={r.status === "done" ? 100 : r.analysisProgress ?? 0}
-                  />
+                  <Progress value={statusProgress(r.status)} />
                 </TableCell>
                 <TableCell className="text-right space-x-2">
                   <Button variant="outline" size="sm" asChild>
@@ -87,11 +93,7 @@ export default function StatusesPage() {
                     </Link>
                   </Button>
                   <Button variant="outline" size="sm" asChild>
-                    <a
-                      href={`/api/requests/${encodeURIComponent(r.id)}/file`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
+                    <a href={getFileUrl(r.id)} target="_blank" rel="noreferrer">
                       Файл
                     </a>
                   </Button>
@@ -102,7 +104,7 @@ export default function StatusesPage() {
             {requests.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={8}
                   className="text-center text-muted-foreground"
                 >
                   Запросов пока нет.

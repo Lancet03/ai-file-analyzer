@@ -1,14 +1,21 @@
-import type { AnalyzerRequest } from "@/lib/types";
-import { normalizeRequest, normalizeRequestList } from "@/lib/normalize";
+import type {
+  AnalyzerRequest,
+  BackendListResponse,
+  BackendRequest,
+} from "@/lib/types";
+import { normalizeList, normalizeRequest } from "@/lib/normalize";
 
+/** GET /api/requests -> { items: [...] } */
 export async function listRequests(
   signal?: AbortSignal
 ): Promise<AnalyzerRequest[]> {
   const res = await fetch("/api/requests", { signal, cache: "no-store" });
   if (!res.ok) throw new Error(`GET /api/requests failed: ${res.status}`);
-  return normalizeRequestList(await res.json());
+  const data = (await res.json()) as BackendListResponse;
+  return normalizeList(data);
 }
 
+/** GET /api/requests/{id} -> BackendRequest */
 export async function getRequest(
   id: string,
   signal?: AbortSignal
@@ -18,19 +25,25 @@ export async function getRequest(
     cache: "no-store",
   });
   if (!res.ok) throw new Error(`GET /api/requests/${id} failed: ${res.status}`);
-  return normalizeRequest(await res.json());
+  const data = (await res.json()) as BackendRequest;
+  return normalizeRequest(data);
 }
 
 /**
- * Upload с прогрессом (XHR) -> POST /api/requests (multipart: file + description)
- * Возвращает либо {id}, либо объект запроса (зависит от вашего бэка).
+ * POST /api/requests
+ * multipart/form-data:
+ *  - file: File (обязательный)
+ *  - description: string (опциональный)
+ *
+ * Прогресс upload — через XHR.
+ * Бэкенд может вернуть либо BackendRequest, либо {id}.
  */
 export function createRequestWithProgress(args: {
   file: File;
-  description?: string;
-  onProgress: (p: number) => void;
+  description?: string | null;
+  onProgress?: (percent: number) => void;
   signal?: AbortSignal;
-}): Promise<any> {
+}): Promise<AnalyzerRequest | { id: string }> {
   const { file, description, onProgress, signal } = args;
 
   return new Promise((resolve, reject) => {
@@ -38,7 +51,7 @@ export function createRequestWithProgress(args: {
     xhr.open("POST", "/api/requests", true);
 
     xhr.upload.onprogress = (evt) => {
-      if (!evt.lengthComputable) return;
+      if (!evt.lengthComputable || !onProgress) return;
       const p = Math.round((evt.loaded / evt.total) * 100);
       onProgress(Math.max(0, Math.min(100, p)));
     };
@@ -49,10 +62,20 @@ export function createRequestWithProgress(args: {
         return;
       }
       try {
-        resolve(JSON.parse(xhr.responseText));
+        const json = JSON.parse(xhr.responseText);
+        // если бэк вернул объект запроса с content_type/storage_key/created_at — нормализуем
+        if (
+          json &&
+          typeof json === "object" &&
+          "content_type" in json &&
+          "storage_key" in json
+        ) {
+          resolve(normalizeRequest(json as BackendRequest));
+        } else {
+          resolve(json as { id: string });
+        }
       } catch {
-        // если бэк вернул не JSON
-        resolve({ ok: true });
+        reject(new Error("Invalid JSON response from POST /api/requests"));
       }
     };
 
@@ -68,9 +91,16 @@ export function createRequestWithProgress(args: {
     }
 
     const form = new FormData();
-    form.append("file", file);
-    if (description && description.trim())
-      form.append("description", description.trim());
+    form.append("file", file); // ключ строго "file"
+    if (description && description.trim()) {
+      form.append("description", description.trim()); // ключ строго "description"
+    }
+
     xhr.send(form);
   });
+}
+
+/** GET /api/requests/{id}/file */
+export function getFileUrl(id: string) {
+  return `/api/requests/${encodeURIComponent(id)}/file`;
 }

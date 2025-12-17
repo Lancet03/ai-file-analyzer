@@ -6,7 +6,6 @@ import { useDropzone } from "react-dropzone";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -62,7 +61,7 @@ export default function UploadPage() {
           <Label htmlFor="desc">Описание (опционально)</Label>
           <Textarea
             id="desc"
-            placeholder="Например: логи за сутки, инцидент #123, и т.д."
+            placeholder="Например: логи за сутки, инцидент #123"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
@@ -75,7 +74,6 @@ export default function UploadPage() {
                 Выбран: <span className="font-medium">{file.name}</span> (
                 {Math.ceil(file.size / 1024)} KB)
               </div>
-
               <Button onClick={() => create(file, description)}>
                 Отправить
               </Button>

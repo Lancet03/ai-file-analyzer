@@ -8,10 +8,7 @@ export function useRequestsPolling(intervalMs: number = 3000) {
 
   useEffect(() => {
     syncList();
-    const t = window.setInterval(() => {
-      syncList();
-    }, intervalMs);
-
+    const t = window.setInterval(() => syncList(), intervalMs);
     return () => window.clearInterval(t);
   }, [syncList, intervalMs]);
 }

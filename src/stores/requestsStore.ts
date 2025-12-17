@@ -7,7 +7,6 @@ import {
   getRequest,
   listRequests,
 } from "@/lib/api/requests";
-import { normalizeRequest } from "@/lib/normalize";
 
 function makeLocalId() {
   return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
@@ -59,11 +58,9 @@ export const useRequestsStore = create<State>((set, get) => ({
   fetchOne: async (id: string) => {
     try {
       const r = await getRequest(id);
-      set((s) => ({
-        byId: { ...s.byId, [id]: r },
-      }));
+      set((s) => ({ byId: { ...s.byId, [id]: r } }));
     } catch {
-      // не валим UI, ошибка будет видна на уровне страницы при необходимости
+      // опционально логирование
     }
   },
 
@@ -102,9 +99,8 @@ export const useRequestsStore = create<State>((set, get) => ({
         },
       });
 
-      // Поддержим разные ответы бэка: {id} или объект запроса
-      const requestId = resp?.id ? String(resp.id) : undefined;
-      const maybeRequest = resp?.id ? normalizeRequest(resp) : undefined;
+      // resp может быть AnalyzerRequest или {id}
+      const requestId = "id" in resp ? resp.id : undefined;
 
       set((s) => ({
         uploads: {
@@ -113,19 +109,21 @@ export const useRequestsStore = create<State>((set, get) => ({
             ...s.uploads[localId],
             progress: 100,
             state: "done",
-            requestId: requestId ?? maybeRequest?.id,
+            requestId,
           },
         },
-        byId: maybeRequest?.id
-          ? { ...s.byId, [maybeRequest.id]: maybeRequest }
-          : s.byId,
+        byId:
+          typeof resp === "object" && "storageKey" in resp
+            ? { ...s.byId, [resp.id]: resp }
+            : s.byId,
       }));
 
-      // Обновим список после создания
       await get().syncList();
 
-      // Если бэк вернул только id — подтянем детали
-      if (requestId) await get().fetchOne(requestId);
+      // если бэк вернул только {id}, подтянем детали
+      if (requestId && !(typeof resp === "object" && "storageKey" in resp)) {
+        await get().fetchOne(requestId);
+      }
     } catch (e) {
       set((s) => ({
         uploads: {
