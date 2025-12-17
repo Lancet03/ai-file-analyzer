@@ -23,7 +23,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
             <div className="leading-tight">
               <div className="text-sm font-semibold tracking-tight">
-                AI File Analyzer
+                Architectural Diagrams Security Analyzer
               </div>
               <div className="text-xs text-muted-foreground">
                 Upload • Queue • Status • Download
