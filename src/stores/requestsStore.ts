@@ -6,6 +6,7 @@ import {
   createRequestWithProgress,
   getRequest,
   listRequests,
+  deleteRequest,
 } from "@/lib/api/requests";
 
 function makeLocalId() {
@@ -26,6 +27,7 @@ type State = {
   fetchOne: (id: string) => Promise<void>;
   create: (file: File, description?: string) => Promise<void>;
   clearUpload: (localId: string) => void;
+  remove: (id: string) => Promise<void>;
 };
 
 export const useRequestsStore = create<State>((set, get) => ({
@@ -144,5 +146,30 @@ export const useRequestsStore = create<State>((set, get) => ({
       delete next[localId];
       return { uploads: next };
     });
+  },
+
+  remove: async (id: string) => {
+    // optimistic update
+    const prev = get().requests;
+    const prevById = get().byId;
+
+    set((s) => ({
+      requests: s.requests.filter((r) => r.id !== id),
+      byId: (() => {
+        const next = { ...s.byId };
+        delete next[id];
+        return next;
+      })(),
+    }));
+
+    try {
+      await deleteRequest(id);
+      // подтянем актуальное состояние списка после удаления
+      await get().syncList();
+    } catch (e) {
+      // откат, если удаление не удалось
+      set({ requests: prev, byId: prevById });
+      throw e;
+    }
   },
 }));

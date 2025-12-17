@@ -10,3 +10,12 @@ export async function GET(
   const url = buildUpstreamUrl(req, `/api/requests/${encodeURIComponent(id)}`);
   return proxyFetch(req, url);
 }
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const id = (await params).id;
+  const url = buildUpstreamUrl(req, `/api/requests/${encodeURIComponent(id)}`);
+  return proxyFetch(req, url);
+}

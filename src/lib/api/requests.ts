@@ -102,3 +102,13 @@ export function createRequestWithProgress(args: {
 export function getFileUrl(id: string) {
   return `/api/requests/${encodeURIComponent(id)}/file`;
 }
+
+export async function deleteRequest(id: string): Promise<void> {
+  const res = await fetch(`/api/requests/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+
+  if (!res.ok) {
+    throw new Error(`DELETE /api/requests/${id} failed: ${res.status}`);
+  }
+}

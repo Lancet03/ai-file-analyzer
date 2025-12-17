@@ -17,6 +17,7 @@ export default function RequestDetailsPage() {
 
   const byId = useRequestsStore((s) => s.byId);
   const fetchOne = useRequestsStore((s) => s.fetchOne);
+  const remove = useRequestsStore((s) => s.remove);
 
   const r = byId[id];
 
@@ -79,11 +80,28 @@ export default function RequestDetailsPage() {
           {r?.status ? <RequestStatusBadge status={r.status} /> : "-"}
         </div>
 
-        <div>
+        <div className="flex gap-2">
           <Button size="lg" className="text-lg" asChild>
             <a href={getFileUrl(id)} target="_blank" rel="noreferrer">
               Скачать исходный файл
             </a>
+          </Button>
+
+          <Button
+            size="lg"
+            variant="destructive"
+            onClick={async () => {
+              if (!confirm(`Удалить запрос ${id}?`)) return;
+              try {
+                await remove(id);
+                // после удаления логично вернуть пользователя в список
+                window.location.href = "/statuses";
+              } catch (e) {
+                alert(e instanceof Error ? e.message : "Ошибка удаления");
+              }
+            }}
+          >
+            Удалить
           </Button>
         </div>
       </div>

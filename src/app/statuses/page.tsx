@@ -39,6 +39,7 @@ export default function StatusesPage() {
   const isSyncing = useRequestsStore((s) => s.isSyncing);
   const syncError = useRequestsStore((s) => s.syncError);
   const lastSyncAtISO = useRequestsStore((s) => s.lastSyncAtISO);
+  const remove = useRequestsStore((s) => s.remove);
 
   return (
     <div className="space-y-6">
@@ -97,6 +98,23 @@ export default function StatusesPage() {
                     <a href={getFileUrl(r.id)} target="_blank" rel="noreferrer">
                       Файл
                     </a>
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="rounded-full"
+                    onClick={async () => {
+                      if (!confirm(`Удалить запрос ${r.id}?`)) return;
+                      try {
+                        await remove(r.id);
+                      } catch (e) {
+                        alert(
+                          e instanceof Error ? e.message : "Ошибка удаления"
+                        );
+                      }
+                    }}
+                  >
+                    Удалить
                   </Button>
                 </TableCell>
               </TableRow>
