@@ -41,26 +41,27 @@ export default function StatusesPage() {
   const lastSyncAtISO = useRequestsStore((s) => s.lastSyncAtISO);
 
   return (
-    <Card>
-      <CardHeader className="space-y-1">
-        <CardTitle>Статусы запросов</CardTitle>
-        <div className="text-sm text-muted-foreground">
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Статусы запросов
+        </h1>
+        <p className="text-sm text-muted-foreground">
           {isSyncing ? "Синхронизация…" : "Ок"}
           {lastSyncAtISO
             ? ` · ${dayjs(lastSyncAtISO).format("YYYY-MM-DD HH:mm:ss")}`
             : ""}
-        </div>
+        </p>
         {syncError ? (
           <div className="text-sm text-red-600">{syncError}</div>
         ) : null}
-      </CardHeader>
+      </div>
 
-      <CardContent>
+      <div>
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Файл</TableHead>
-
               <TableHead>Создан</TableHead>
               <TableHead>Обновлён</TableHead>
               <TableHead>Статус</TableHead>
@@ -113,7 +114,7 @@ export default function StatusesPage() {
             ) : null}
           </TableBody>
         </Table>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

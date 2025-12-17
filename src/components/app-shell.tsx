@@ -11,22 +11,60 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen">
-      <header className="border-b">
-        <div className="mx-auto max-w-5xl px-6 py-4 flex items-center justify-between">
-          <div className="font-semibold">ADSA</div>
+      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="mx-auto max-w-6xl px-6 py-3 flex items-center justify-between">
+          {/* Brand */}
+          <Link href="/upload" className="group flex items-center gap-3">
+            <div className="grid place-items-center rounded-xl border bg-background px-3 py-2 shadow-sm">
+              <span className="text-[20px] font-extrabold tracking-tight bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                ADSA
+              </span>
+            </div>
 
-          <nav className="flex gap-2">
-            <Button variant={onUpload ? "default" : "outline"} asChild>
-              <Link href="/upload">Загрузка</Link>
+            <div className="leading-tight">
+              <div className="text-sm font-semibold tracking-tight">
+                AI File Analyzer
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Upload • Queue • Status • Download
+              </div>
+            </div>
+          </Link>
+
+          {/* Nav */}
+          <nav className="flex items-center gap-2">
+            <Button
+              variant={onUpload ? "default" : "outline"}
+              asChild
+              className="rounded-full px-4"
+            >
+              <Link href="/upload" aria-current={onUpload ? "page" : undefined}>
+                Загрузка
+              </Link>
             </Button>
-            <Button variant={onStatuses ? "default" : "outline"} asChild>
-              <Link href="/statuses">Статусы</Link>
+
+            <Button
+              variant={onStatuses ? "default" : "outline"}
+              asChild
+              className="rounded-full px-4"
+            >
+              <Link
+                href="/statuses"
+                aria-current={onStatuses ? "page" : undefined}
+              >
+                Статусы
+              </Link>
             </Button>
           </nav>
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-6">{children}</main>
+      <main className="mx-auto max-w-6xl px-6 py-8">
+        {/* фон-панель для контента */}
+        <div className="rounded-2xl border bg-background shadow-sm p-6 md:p-8">
+          {children}
+        </div>
+      </main>
     </div>
   );
 }

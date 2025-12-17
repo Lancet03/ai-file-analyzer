@@ -36,101 +36,110 @@ export default function UploadPage() {
   );
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Новый запрос на анализ</CardTitle>
-      </CardHeader>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Новый запрос</h1>
+        <p className="text-sm text-muted-foreground">
+          Загрузите файл и (опционально) добавьте описание. Запрос уйдёт в
+          обработку на бэкенде.
+        </p>
+      </div>
 
-      <CardContent className="space-y-5">
-        <div
-          {...getRootProps()}
-          className={[
-            "border border-dashed rounded-lg p-8 text-center cursor-pointer select-none",
-            isDragActive ? "bg-muted" : "bg-background",
-          ].join(" ")}
-        >
-          <input {...getInputProps()} />
-          <div className="text-sm text-muted-foreground">
-            {isDragActive
-              ? "Отпустите файл здесь…"
-              : "Перетащите файл сюда или кликните для выбора"}
-          </div>
+      <div
+        {...getRootProps()}
+        className={[
+          "rounded-2xl border border-dashed p-10 text-center cursor-pointer select-none transition",
+          "hover:bg-muted/40",
+          isDragActive
+            ? "bg-muted/60 border-muted-foreground/40"
+            : "bg-background",
+        ].join(" ")}
+      >
+        <input {...getInputProps()} />
+        <div className="text-sm font-medium">Перетащите файл сюда</div>
+        <div className="text-xs text-muted-foreground mt-1">
+          или нажмите, чтобы выбрать файл
         </div>
+      </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="desc">Описание (опционально)</Label>
-          <Textarea
-            id="desc"
-            placeholder="Например: логи за сутки, инцидент #123"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="desc">Описание (опционально)</Label>
+        <Textarea
+          id="desc"
+          placeholder="Например: логи за сутки, инцидент #123"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="min-h-[90px] rounded-xl"
+        />
+      </div>
 
-        <div className="space-y-2">
-          {file ? (
-            <>
-              <div className="text-sm">
-                Выбран: <span className="font-medium">{file.name}</span> (
-                {Math.ceil(file.size / 1024)} KB)
-              </div>
-              <Button onClick={() => create(file, description)}>
-                Отправить
-              </Button>
-            </>
-          ) : (
-            <div className="text-sm text-muted-foreground">Файл не выбран.</div>
-          )}
-        </div>
+      <div className="space-y-2">
+        {file ? (
+          <>
+            <div className="text-sm">
+              Выбран: <span className="font-medium">{file.name}</span>{" "}
+              <span className="text-muted-foreground">
+                ({Math.ceil(file.size / 1024)} KB)
+              </span>
+            </div>
+            <Button
+              className="rounded-full px-5"
+              onClick={() => create(file, description)}
+            >
+              Отправить в ADSA
+            </Button>
+          </>
+        ) : (
+          <div className="text-sm text-muted-foreground">Файл не выбран.</div>
+        )}
+      </div>
 
-        {activeUploads.length > 0 ? (
-          <div className="space-y-3">
-            <div className="text-sm font-medium">Загрузки</div>
+      {activeUploads.length > 0 ? (
+        <div className="space-y-3 pt-2">
+          <div className="text-sm font-medium">Текущие загрузки</div>
 
-            {activeUploads.map((u) => (
-              <div key={u.localId} className="border rounded-lg p-3 space-y-2">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="text-sm">
-                    <span className="font-medium">{u.filename}</span>{" "}
-                    <span className="text-muted-foreground">
-                      ({Math.ceil(u.sizeBytes / 1024)} KB)
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant={
-                        u.state === "error" ? "destructive" : "secondary"
-                      }
-                    >
-                      {u.state}
-                    </Badge>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => clearUpload(u.localId)}
-                    >
-                      Скрыть
-                    </Button>
-                  </div>
+          {activeUploads.map((u) => (
+            <div key={u.localId} className="rounded-2xl border p-4 space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-sm">
+                  <span className="font-medium">{u.filename}</span>{" "}
+                  <span className="text-muted-foreground">
+                    ({Math.ceil(u.sizeBytes / 1024)} KB)
+                  </span>
                 </div>
 
-                <Progress value={u.progress} />
-
-                {u.requestId ? (
-                  <div className="text-xs text-muted-foreground">
-                    requestId: {u.requestId}
-                  </div>
-                ) : null}
-
-                {u.error ? (
-                  <div className="text-sm text-red-600">{u.error}</div>
-                ) : null}
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant={u.state === "error" ? "destructive" : "secondary"}
+                  >
+                    {u.state}
+                  </Badge>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full"
+                    onClick={() => clearUpload(u.localId)}
+                  >
+                    Скрыть
+                  </Button>
+                </div>
               </div>
-            ))}
-          </div>
-        ) : null}
-      </CardContent>
-    </Card>
+
+              <Progress value={u.progress} />
+
+              {u.requestId ? (
+                <div className="text-xs text-muted-foreground">
+                  requestId: <span className="font-mono">{u.requestId}</span>
+                </div>
+              ) : null}
+
+              {u.error ? (
+                <div className="text-sm text-red-600">{u.error}</div>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
