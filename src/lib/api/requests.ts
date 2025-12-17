@@ -16,16 +16,14 @@ export async function listRequests(
 }
 
 /** GET /api/requests/{id} -> BackendRequest */
-export async function getRequest(
-  id: string,
-  signal?: AbortSignal
-): Promise<AnalyzerRequest> {
+export async function getRequest(id: string): Promise<AnalyzerRequest> {
+  console.log("encodeURIComponent(id)", encodeURIComponent(id));
   const res = await fetch(`/api/requests/${encodeURIComponent(id)}`, {
-    signal,
     cache: "no-store",
   });
   if (!res.ok) throw new Error(`GET /api/requests/${id} failed: ${res.status}`);
   const data = (await res.json()) as BackendRequest;
+  console.log("data", data);
   return normalizeRequest(data);
 }
 

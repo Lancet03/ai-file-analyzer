@@ -12,6 +12,7 @@ import { getFileUrl } from "@/lib/api/requests";
 
 export default function RequestDetailsPage() {
   const params = useParams<{ id: string }>();
+
   const id = params.id;
 
   const byId = useRequestsStore((s) => s.byId);
@@ -26,64 +27,66 @@ export default function RequestDetailsPage() {
   }, [id, fetchOne]);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Детали запроса</CardTitle>
-      </CardHeader>
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Детали запроса
+        </h1>
+      </div>
 
-      <CardContent className="space-y-3">
-        <div className="text-sm">
+      <div className="space-y-3">
+        <div className="text-md">
           <span className="text-muted-foreground">ID:</span>{" "}
           <span className="font-mono">{id}</span>
         </div>
 
-        <div className="text-sm">
+        <div className="text-md">
           <span className="text-muted-foreground">Файл:</span>{" "}
           <span className="font-medium">{r?.filename ?? "-"}</span>
         </div>
 
-        <div className="text-sm">
+        <div className="text-md">
           <span className="text-muted-foreground">content_type:</span>{" "}
           {r?.contentType ?? "-"}
         </div>
 
-        <div className="text-sm">
+        <div className="text-md">
           <span className="text-muted-foreground">storage_key:</span>{" "}
           <span className="font-mono">{r?.storageKey ?? "-"}</span>
         </div>
 
-        <div className="text-sm">
+        <div className="text-md">
           <span className="text-muted-foreground">Описание:</span>{" "}
           {r?.description ?? "-"}
         </div>
 
-        <div className="text-sm">
+        <div className="text-md">
           <span className="text-muted-foreground">Создан:</span>{" "}
           {r?.createdAt
             ? dayjs(r.createdAt).format("YYYY-MM-DD HH:mm:ss")
             : "-"}
         </div>
 
-        <div className="text-sm">
+        <div className="text-md">
           <span className="text-muted-foreground">Обновлён:</span>{" "}
           {r?.updatedAt
             ? dayjs(r.updatedAt).format("YYYY-MM-DD HH:mm:ss")
             : "-"}
         </div>
 
-        <div className="text-sm flex items-center gap-2">
+        <div className="text-md flex items-center gap-2">
           <span className="text-muted-foreground">Статус:</span>
           {r?.status ? <RequestStatusBadge status={r.status} /> : "-"}
         </div>
 
-        <div className="pt-2">
-          <Button asChild variant="outline">
+        <div>
+          <Button size="lg" className="text-lg" asChild>
             <a href={getFileUrl(id)} target="_blank" rel="noreferrer">
               Скачать исходный файл
             </a>
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
