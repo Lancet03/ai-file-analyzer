@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ADSA Frontend
 
-## Getting Started
+Next.js frontend for the current ADSA prototype. In the repository's current state it provides:
 
-First, run the development server:
+- upload flow for architecture files;
+- request list and polling-based status tracking;
+- request details view;
+- request deletion;
+- original uploaded file download through the local proxy routes;
+- local proxy routes and client helpers for backend result/report endpoints.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+The backend and worker can already produce `findings.json` and `report.md`. The frontend does not render those findings or the generated Markdown report in the UI yet; it currently focuses on upload, tracking, details and source-file download.
+
+## Runtime Requirements
+
+- Node.js `20.9.0` or newer.
+- npm `9+`.
+
+This requirement comes from the official Next.js 16 installation guide, which lists Node.js `20.9+` as the minimum supported version:
+https://nextjs.org/docs/app/getting-started/installation
+
+## Configuration
+
+Copy [`.env.example`](./.env.example) to `.env`:
+
+```dotenv
+BACKEND_ORIGIN=http://127.0.0.1:8000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`BACKEND_ORIGIN` must point to the FastAPI gateway, without the `/api` suffix.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Local Run
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+nvm use
+npm ci
+npm run lint
+npm run build
+npm run dev
+```
 
-## Learn More
+Open `http://localhost:3000`.
 
-To learn more about Next.js, take a look at the following resources:
+## Routes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `/upload`: upload one file and optional description.
+- `/statuses`: polling table with request status, conditional progress and actions.
+- `/statuses/[id]`: request metadata, current status, source-file download and deletion.
+- `/api/requests/**`: Next.js proxy routes that forward to `BACKEND_ORIGIN`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Notes
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `npm run lint` checks the repository source tree explicitly with ESLint.
+- `npm run build` expects dependencies installed via `npm ci`.
+- Local proxy routes under `src/app/api/**` forward requests to `BACKEND_ORIGIN`.
+- `src/lib/api/requests.ts` already contains helpers for `/result` and `/report`, but the visible detail page does not use them yet.

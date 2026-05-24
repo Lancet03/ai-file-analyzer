@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import dayjs from "dayjs";
 
 import { useRequestsStore } from "@/stores/requestsStore";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RequestStatusBadge } from "@/components/request-status-badge";
 import { Button } from "@/components/ui/button";
 import { getFileUrl } from "@/lib/api/requests";

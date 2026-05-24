@@ -1,4 +1,5 @@
 import type {
+  AnalysisResult,
   AnalyzerRequest,
   BackendListResponse,
   BackendRequest,
@@ -101,6 +102,20 @@ export function createRequestWithProgress(args: {
 /** GET /api/requests/{id}/file */
 export function getFileUrl(id: string) {
   return `/api/requests/${encodeURIComponent(id)}/file`;
+}
+
+/** GET /api/requests/{id}/result */
+export async function getAnalysisResult(id: string): Promise<AnalysisResult> {
+  const res = await fetch(`/api/requests/${encodeURIComponent(id)}/result`, {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`GET /api/requests/${id}/result failed: ${res.status}`);
+  return (await res.json()) as AnalysisResult;
+}
+
+/** GET /api/requests/{id}/report */
+export function getReportUrl(id: string) {
+  return `/api/requests/${encodeURIComponent(id)}/report`;
 }
 
 export async function deleteRequest(id: string): Promise<void> {

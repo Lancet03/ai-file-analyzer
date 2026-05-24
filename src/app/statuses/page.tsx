@@ -6,7 +6,6 @@ import dayjs from "dayjs";
 import { useRequestsPolling } from "@/hooks/useRequestsPolling";
 import { useRequestsStore } from "@/stores/requestsStore";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RequestStatusBadge } from "@/components/request-status-badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -27,6 +26,7 @@ function statusProgress(s: RequestStatus): number {
   // бэк не даёт % анализа — показываем условно по статусу
   if (s === "PENDING") return 10;
   if (s === "SCHEDULED") return 35;
+  if (s === "PROCESSING") return 70;
   if (s === "COMPLETED") return 100;
   if (s === "FAILED") return 100;
   return 0;

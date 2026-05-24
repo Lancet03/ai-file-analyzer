@@ -9,6 +9,8 @@ export function RequestStatusBadge({ status }: { status: RequestStatus }) {
       return <Badge variant="secondary">PENDING</Badge>;
     case "SCHEDULED":
       return <Badge>SCHEDULED</Badge>;
+    case "PROCESSING":
+      return <Badge className="bg-blue-600 text-white">PROCESSING</Badge>;
     case "COMPLETED":
       return <Badge className="bg-green-600 text-white">COMPLETED</Badge>;
     case "FAILED":
