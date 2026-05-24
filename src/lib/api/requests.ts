@@ -105,17 +105,28 @@ export function getFileUrl(id: string) {
 }
 
 /** GET /api/requests/{id}/result */
-export async function getAnalysisResult(id: string): Promise<AnalysisResult> {
+export async function getAnalysisResult(
+  id: string,
+  signal?: AbortSignal
+): Promise<AnalysisResult> {
   const res = await fetch(`/api/requests/${encodeURIComponent(id)}/result`, {
     cache: "no-store",
+    signal,
   });
-  if (!res.ok) throw new Error(`GET /api/requests/${id}/result failed: ${res.status}`);
+  if (!res.ok)
+    throw new Error(`GET /api/requests/${id}/result failed: ${res.status}`);
   return (await res.json()) as AnalysisResult;
 }
 
 /** GET /api/requests/{id}/report */
-export function getReportUrl(id: string) {
-  return `/api/requests/${encodeURIComponent(id)}/report`;
+export function getReportUrl(id: string, storageKey?: string | null) {
+  const params = new URLSearchParams();
+  if (storageKey) params.set("storage_key", storageKey);
+
+  const query = params.toString();
+  return `/api/requests/${encodeURIComponent(id)}/report${
+    query ? `?${query}` : ""
+  }`;
 }
 
 export async function deleteRequest(id: string): Promise<void> {
