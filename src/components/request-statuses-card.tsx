@@ -1,0 +1,143 @@
+"use client";
+
+import Link from "next/link";
+import dayjs from "dayjs";
+
+import { RequestStatusBadge } from "@/components/request-status-badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useRequestsPolling } from "@/hooks/useRequestsPolling";
+import { getFileUrl } from "@/lib/api/requests";
+import type { RequestStatus } from "@/lib/types";
+import { useRequestsStore } from "@/stores/requestsStore";
+
+function statusProgress(s: RequestStatus): number {
+  if (s === "PENDING") return 10;
+  if (s === "SCHEDULED") return 35;
+  if (s === "PROCESSING") return 70;
+  if (s === "COMPLETED") return 100;
+  if (s === "FAILED") return 100;
+  return 0;
+}
+
+function DateTimeCell({ value }: { value: string }) {
+  const d = dayjs(value);
+
+  return (
+    <div className="leading-tight">
+      <div>{d.format("YYYY-MM-DD")}</div>
+      <div className="text-muted-foreground">{d.format("HH:mm:ss")}</div>
+    </div>
+  );
+}
+
+export function RequestStatusesCard() {
+  useRequestsPolling(3000);
+
+  const requests = useRequestsStore((s) => s.requests);
+  const isSyncing = useRequestsStore((s) => s.isSyncing);
+  const syncError = useRequestsStore((s) => s.syncError);
+  const lastSyncAtISO = useRequestsStore((s) => s.lastSyncAtISO);
+  const remove = useRequestsStore((s) => s.remove);
+
+  return (
+    <section className="space-y-6 rounded-md border bg-background p-6 shadow-sm">
+      <div className="space-y-1">
+        <h2 className="text-2xl font-semibold tracking-tight">
+          Статусы запросов
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          {isSyncing ? "Синхронизация…" : "Ок"}
+          {lastSyncAtISO
+            ? ` · ${dayjs(lastSyncAtISO).format("YYYY-MM-DD HH:mm:ss")}`
+            : ""}
+        </p>
+        {syncError ? (
+          <div className="text-sm text-red-600">{syncError}</div>
+        ) : null}
+      </div>
+
+      <Table className="table-fixed">
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[260px]">Файл</TableHead>
+            <TableHead className="w-[110px]">Создан</TableHead>
+            <TableHead className="w-[110px]">Обновлён</TableHead>
+            <TableHead className="w-[110px]">Статус</TableHead>
+            <TableHead className="w-[160px]">Прогресс</TableHead>
+            <TableHead className="w-[230px] text-right">Действия</TableHead>
+          </TableRow>
+        </TableHeader>
+
+        <TableBody>
+          {requests.map((r) => (
+            <TableRow key={r.id}>
+              <TableCell className="w-[260px] whitespace-normal break-words font-medium">
+                {r.filename}
+              </TableCell>
+
+              <TableCell className="w-[110px]">
+                <DateTimeCell value={r.createdAt} />
+              </TableCell>
+              <TableCell className="w-[110px]">
+                <DateTimeCell value={r.updatedAt} />
+              </TableCell>
+              <TableCell>
+                <RequestStatusBadge status={r.status} />
+              </TableCell>
+              <TableCell className="w-[160px]">
+                <Progress value={statusProgress(r.status)} />
+              </TableCell>
+              <TableCell className="w-[230px] space-x-2 text-right">
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/statuses/${encodeURIComponent(r.id)}`}>
+                    Детали
+                  </Link>
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                  <a href={getFileUrl(r.id)} target="_blank" rel="noreferrer">
+                    Файл
+                  </a>
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="rounded-full"
+                  onClick={async () => {
+                    if (!confirm(`Удалить запрос ${r.id}?`)) return;
+                    try {
+                      await remove(r.id);
+                    } catch (e) {
+                      alert(e instanceof Error ? e.message : "Ошибка удаления");
+                    }
+                  }}
+                >
+                  Удалить
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+
+          {requests.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={6}
+                className="text-center text-muted-foreground"
+              >
+                Запросов пока нет.
+              </TableCell>
+            </TableRow>
+          ) : null}
+        </TableBody>
+      </Table>
+    </section>
+  );
+}
