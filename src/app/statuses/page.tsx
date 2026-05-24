@@ -32,6 +32,17 @@ function statusProgress(s: RequestStatus): number {
   return 0;
 }
 
+function DateTimeCell({ value }: { value: string }) {
+  const d = dayjs(value);
+
+  return (
+    <div className="leading-tight">
+      <div>{d.format("YYYY-MM-DD")}</div>
+      <div className="text-muted-foreground">{d.format("HH:mm:ss")}</div>
+    </div>
+  );
+}
+
 export default function StatusesPage() {
   useRequestsPolling(3000);
 
@@ -59,36 +70,38 @@ export default function StatusesPage() {
       </div>
 
       <div>
-        <Table>
+        <Table className="table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead>Файл</TableHead>
-              <TableHead>Создан</TableHead>
-              <TableHead>Обновлён</TableHead>
-              <TableHead>Статус</TableHead>
-              <TableHead>Прогресс</TableHead>
-              <TableHead className="text-right">Действия</TableHead>
+              <TableHead className="w-[260px]">Файл</TableHead>
+              <TableHead className="w-[110px]">Создан</TableHead>
+              <TableHead className="w-[110px]">Обновлён</TableHead>
+              <TableHead className="w-[110px]">Статус</TableHead>
+              <TableHead className="w-[160px]">Прогресс</TableHead>
+              <TableHead className="w-[230px] text-right">Действия</TableHead>
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {requests.map((r) => (
               <TableRow key={r.id}>
-                <TableCell className="font-medium">{r.filename}</TableCell>
-
-                <TableCell>
-                  {dayjs(r.createdAt).format("YYYY-MM-DD HH:mm:ss")}
+                <TableCell className="w-[260px] whitespace-normal break-words font-medium">
+                  {r.filename}
                 </TableCell>
-                <TableCell>
-                  {dayjs(r.updatedAt).format("YYYY-MM-DD HH:mm:ss")}
+
+                <TableCell className="w-[110px]">
+                  <DateTimeCell value={r.createdAt} />
+                </TableCell>
+                <TableCell className="w-[110px]">
+                  <DateTimeCell value={r.updatedAt} />
                 </TableCell>
                 <TableCell>
                   <RequestStatusBadge status={r.status} />
                 </TableCell>
-                <TableCell className="w-[180px]">
+                <TableCell className="w-[160px]">
                   <Progress value={statusProgress(r.status)} />
                 </TableCell>
-                <TableCell className="text-right space-x-2">
+                <TableCell className="w-[230px] space-x-2 text-right">
                   <Button variant="outline" size="sm" asChild>
                     <Link href={`/statuses/${encodeURIComponent(r.id)}`}>
                       Детали
@@ -123,7 +136,7 @@ export default function StatusesPage() {
             {requests.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={6}
                   className="text-center text-muted-foreground"
                 >
                   Запросов пока нет.
